@@ -205,6 +205,60 @@ PY21C_DRY_RUN   # Test without execution</code></pre>
                 </p>
             </section>
 
+            <!-- Slide 7: GPU Problem -->
+            <section>
+                <h2>GPU Acceleration Challenge</h2>
+                <br>
+                <h3 style="color: #d73502;">Problem: GPU Not Being Used</h3>
+                <p>21cmFAST was compiled with CUDA support but wasn't utilizing the GPU at runtime</p>
+                <br>
+                <h3>Root Causes Identified</h3>
+                <ul>
+                    <li><span class="highlight">Hardcoded CPU flag</span>:
+                        <code>use_cuda = false</code> in C source files</li>
+                    <li><span class="highlight">Wrong preprocessor check</span>:
+                        Code checked <code>CUDA_FOUND</code> instead of <code>USE_CUDA</code></li>
+                    <li><span class="highlight">Parameter conflicts</span>:
+                        Multiple simulation parameters incompatible with GPU execution</li>
+                </ul>
+                <br>
+                <p style="font-size: 0.8em; color: #666;" class="center">
+                    GPU capability was present but disabled by default settings
+                </p>
+            </section>
+
+            <!-- Slide 8: GPU Solution -->
+            <section>
+                <h2>GPU Acceleration Solution</h2>
+                <br>
+                <h3 style="color: #2a76dd;">Solution Implementation</h3>
+
+                <h4>1. Code Changes</h4>
+                <ul style="font-size: 0.9em;">
+                    <li>Set <code>use_cuda = true</code> in IonisationBox.c and filtering.c</li>
+                    <li>Fixed preprocessor directives: <code>CUDA_FOUND</code> → <code>USE_CUDA</code></li>
+                </ul>
+
+                <h4>2. Required GPU Parameters</h4>
+                <pre style="font-size: 0.5em;"><code>USE_MASS_DEPENDENT_ZETA = True    # Enable GPU path
+USE_MINI_HALOS = False            # Required for GPU
+USE_HALO_FIELD = False            # Required for GPU
+HALO_STOCHASTICITY = False        # Must match USE_HALO_FIELD
+USE_EXP_FILTER = False            # Incompatible with GPU
+USE_UPPER_STELLAR_TURNOVER = False # Not implemented for GPU</code></pre>
+
+                <h4>3. Infrastructure Fixes</h4>
+                <ul style="font-size: 0.9em;">
+                    <li>Added CUDA module to environment setup</li>
+                    <li>Fixed ninja build tool path issues</li>
+                    <li>Created GPU monitoring tools</li>
+                </ul>
+
+                <p style="font-size: 0.8em; color: #2a76dd; margin-top: 20px;" class="center">
+                    <strong>Result: Tesla P100 GPU successfully utilized on OzStar</strong>
+                </p>
+            </section>
+
         </div>
     </div>
 
