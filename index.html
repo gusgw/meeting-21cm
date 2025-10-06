@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>21cmFAST Performance Profiling System</title>
+    <title>21cmFAST GPU Implementation and Optimisation</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reset.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.css">
@@ -46,7 +46,8 @@
         }
         .reveal ul {
             display: block;
-            margin-left: 1em;
+            margin-left: 5em;
+            margin-right: 5em;
         }
         .reveal .slides section {
             text-align: left;
@@ -64,11 +65,30 @@
             font-weight: bold;
         }
         img.plot {
-            max-width: 90%;
-            max-height: 500px;
+            max-width: 100%;
+            max-height: 100%;
             display: block;
             margin: 0 auto;
-            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Full screen plot slides */
+        .plot-slide {
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .plot-slide img {
+            width: 90%;
+            height: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+        /* Smaller size for profile plots that might be taller */
+        .plot-slide.profile-plot img {
+            width: 80%;
+            height: 80%;
+            max-height: 80vh;
         }
     </style>
 </head>
@@ -76,132 +96,84 @@
     <div class="reveal">
         <div class="slides">
 
-            <!-- Slide 1: Title -->
+            <!-- Title Slide -->
             <section>
-                <h1>21cmFAST Performance Profiling System</h1>
-                <h3 style="color: #555;">Automated Job Submission and Analysis</h3>
+                <h1>21cmFAST GPU Implementation and Optimisation</h1>
                 <br>
-                <p class="center">A comprehensive framework for benchmarking and optimizing<br>21cmFAST simulations on HPC systems</p>
-                <br>
-                <p class="center" style="font-size: 0.7em; color: #777;">
+                <p class="center" style="font-size: 0.8em; color: #555;">
                     ADACS Optimization Project<br>
-                    September 2025
+                    Client Meeting
                 </p>
             </section>
 
-            <!-- Slide 2: Overview of Job Scripts -->
+            <!-- Slide 1: Outline of work on CPU code -->
             <section>
-                <h2>Job Scripts Overview</h2>
+                <h2>Outline of work on CPU code</h2>
                 <br>
-                <h3>Script Architecture</h3>
                 <ul>
-                    <li><strong>5 Calculation Scripts</strong> in <code>script/</code>:
-                        <ul style="font-size: 0.9em;">
-                            <li><code>coeval_basic.py</code> - Basic coeval simulations</li>
-                            <li><code>coeval_advanced.py</code> - Advanced coeval with custom parameters</li>
-                            <li><code>lightcone.py</code> - Lightcone calculations</li>
-                            <li><code>lightcone_production.py</code> - Production lightcones with visualization</li>
-                            <li><code>run_new.py</code> - Modern API demonstration</li>
-                        </ul>
-                    </li>
-                    <li><strong>2 Infrastructure Scripts</strong>:
-                        <ul style="font-size: 0.9em;">
-                            <li><code>cpu.sh</code> - Generic runner with profiling support</li>
-                            <li><code>profile.sh</code> - Batch submission orchestrator</li>
-                        </ul>
-                    </li>
-                    <li><strong>1 Analysis Script</strong>:
-                        <ul style="font-size: 0.9em;">
-                            <li><code>plot.py</code> - Visualization of timing and profile data</li>
-                        </ul>
-                    </li>
+                    <li>Created template calculations for all simulation types</li>
+                    <li>Implemented automated profiling system with cProfile integration</li>
+                    <li>Set up batch job submission framework for systematic testing</li>
+                    <li>Tested compiler optimization flags: -O2, -Ofast, -march=native</li>
+                    <li>Developed performance visualization tools for timing analysis</li>
+                    <li>Established baseline performance metrics across multiple runs</li>
                 </ul>
             </section>
 
-            <!-- Slide 3: cpu.sh Script Details -->
+            <!-- Slide 2: Outline of work on GPU code -->
             <section>
-                <h2>cpu.sh: The Execution Engine</h2>
+                <h2>Outline of work on GPU code</h2>
                 <br>
-                <h3>Key Features</h3>
                 <ul>
-                    <li><span class="highlight">Environment Variables</span> for configuration:
-                        <pre><code class="bash">PY21C_SCRIPT    # Python script to run
-PY21C_VENV      # Virtual environment
-PY21C_CPROFILE  # Enable/disable profiling
-PY21C_TAG       # Tag for organizing results
-PY21C_DRY_RUN   # Test without execution</code></pre>
-                    </li>
-                    <li><span class="highlight">Isolated Execution</span>: Copies scripts to unique directories</li>
-                    <li><span class="highlight">Profiling Integration</span>: Optional cProfile with minimal overhead</li>
-                    <li><span class="highlight">Comprehensive Logging</span>: Execution times, environment info, git commits</li>
+                    <li>Resolved build system issues - removed dependency on ninja workarounds</li>
+                    <li>Successfully running full GPU calculations end-to-end</li>
+                    <li>Implemented CUDA kernels for filtering and stochasticity modules</li>
+                    <li>One kernel remains to be set up</li>
+                    <li>Integrated nanobind for Python-GPU interface (686 lines, 52 functions)</li>
+                    <li>Established GPU performance benchmarking on multiple hardware configurations</li>
                 </ul>
-
-                <h3>Output Structure</h3>
-                <pre><code class="bash">work/run/[script]/[tag]-[timestamp]-[jobid]/
-    ├── *.py          # Copied scripts
-    ├── *.h5          # Simulation outputs
-    └── *.pdf         # Visualization outputs</code></pre>
             </section>
 
-            <!-- Slide 4: profile.sh Batch Submission -->
+            <!-- Slide 3 Plot -->
+            <section class="plot-slide">
+                <img src="execution_times_small.o2.run0_small.o2.native.run1_small.ofast.run2_small.ofast.native.run3.png"
+                     alt="CPU Execution Times Comparison" class="plot">
+            </section>
+
+            <!-- Slide 4 Plot -->
+            <section class="plot-slide profile-plot">
+                <img src="profile_simple-coeval-small.png"
+                     alt="CPU Job Profile" class="plot">
+            </section>
+
+            <!-- Slide 5 Plot -->
+            <section class="plot-slide">
+                <img src="execution_times_park19.gpu.run0.png"
+                     alt="GPU Execution Times" class="plot">
+            </section>
+
+            <!-- Slide 6: Work on the GPU branch -->
             <section>
-                <h2>profile.sh: Batch Job Orchestration</h2>
+                <h2>Work on the GPU branch is in this fork</h2>
                 <br>
-                <h3>Automated Submission</h3>
-                <pre><code class="bash">./script/profile.sh -n 5 -t baseline</code></pre>
-
-                <p>Submits <strong>50 jobs total</strong>:</p>
-                <ul>
-                    <li>5 scripts × 2 modes (profiled/unprofiled) × 5 runs each</li>
-                    <li>Tagged results: <code>baseline-prof-*</code> and <code>baseline-noprof-*</code></li>
-                </ul>
-
-                <h3>Performance Comparison Workflow</h3>
-                <ol>
-                    <li><strong>Baseline Run</strong>: <code>profile.sh -n 5 -t baseline</code></li>
-                    <li><strong>Modify Code/Flags</strong>: Change optimization settings</li>
-                    <li><strong>Test Run</strong>: <code>profile.sh -n 5 -t optimized</code></li>
-                    <li><strong>Analyze</strong>: <code>plot.py baseline optimized</code></li>
-                </ol>
-
-                <p style="font-size: 0.8em; margin-top: 20px;">
-                    <span class="highlight">Result Files</span>:
-                    <code>*.result.txt</code> (timing) and <code>*.profile</code> (cProfile data)
+                <p class="center" style="font-size: 1.1em;">
+                    <a href="https://github.com/gusgw/21cmFAST" style="color: #2a76dd;">
+                        https://github.com/gusgw/21cmFAST
+                    </a>
+                </p>
+                <p class="center" style="font-size: 1.2em; margin-top: 30px;">
+                    Branch: <code class="highlight">adacs-gpu-build-v5rc</code>
                 </p>
             </section>
 
-            <!-- Slide 5: Execution Times Plot -->
+            <!-- Slide 7: Example jobs location -->
             <section>
-                <h2>Execution Time Analysis</h2>
+                <h2>The example jobs with build, run, and measure scripts are here</h2>
                 <br>
-                <p class="center">Comparing <code>run0</code> vs <code>run1</code> Performance</p>
-                <br>
-                <img src="execution_times_run0_run1.png" alt="Execution Times Comparison" class="plot"
-                     onerror="this.onerror=null; this.src='placeholder_execution.png'; this.alt='Example: Execution times comparison plot showing box plots for each script, comparing profiled vs unprofiled runs across different tags';">
-                <br>
-                <ul style="font-size: 0.8em;">
-                    <li>Box plots show distribution across multiple runs</li>
-                    <li>Profiling overhead typically 5-15%</li>
-                    <li>Identifies performance variations and outliers</li>
-                </ul>
-            </section>
-
-            <!-- Slide 6: Profile Comparison Plot -->
-            <section>
-                <h2>Profile Analysis: run_new.py</h2>
-                <br>
-                <p class="center">Top 10 Most Time-Consuming Functions</p>
-                <br>
-                <img src="profile_run_new.png" alt="Profile Comparison for run_new.py" class="plot"
-                     onerror="this.onerror=null; this.src='placeholder_profile.png'; this.alt='Example: Profile comparison showing horizontal box plots of cumulative time for top functions, comparing run0 vs run1';">
-                <br>
-                <ul style="font-size: 0.8em;">
-                    <li>Identifies performance bottlenecks</li>
-                    <li>Tracks optimization impact on specific functions</li>
-                    <li>Guides targeted optimization efforts</li>
-                </ul>
-                <p style="font-size: 0.7em; color: #666; margin-top: 20px;" class="center">
-                    Compiler flags tested: <code>-Ofast</code> → <code>-Ofast -march=native</code>
+                <p class="center" style="font-size: 1.1em;">
+                    <a href="https://github.com/ADACS-Australia/YQin2025b-21cm" style="color: #2a76dd;">
+                        https://github.com/ADACS-Australia/YQin2025b-21cm
+                    </a>
                 </p>
             </section>
 
@@ -215,7 +187,12 @@ PY21C_DRY_RUN   # Test without execution</code></pre>
             controls: true,
             progress: true,
             center: false,
-            transition: 'slide'
+            transition: 'none',  // Simple transitions
+            width: 1920,
+            height: 1080,
+            margin: 0.04,  // Small margin to prevent cutoff
+            minScale: 0.2,
+            maxScale: 2.0
         });
     </script>
 </body>
